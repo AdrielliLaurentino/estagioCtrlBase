@@ -3,7 +3,7 @@ import {
   Calendar, Loader2, User, ClipboardList, CheckCircle, ChevronDown, 
   Clock, Info, ArrowLeft, Type 
 } from "lucide-react";
-import ModalLateral from "../common/ModalLateral";
+import ModalLateral from '../../components/modal/ModalLateral';
 import { apiFetch } from "../../services/api";
 import { useAuth } from "../../context/AuthContext";
 
