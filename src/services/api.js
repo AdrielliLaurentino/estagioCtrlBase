@@ -29,6 +29,8 @@ const getStorageData = () => {
   }
 };
 
+const BASE_URL = import.meta.env.VITE_API_URL || "";
+
 export async function apiFetch(endpoint, options = {}) {
   const { user, token } = getStorageData();
   const payload = decodeJWT(token);
@@ -39,9 +41,11 @@ export async function apiFetch(endpoint, options = {}) {
   }
 
   const normalizedPath = endpoint.startsWith("/") ? endpoint : `/${endpoint}`;
-  const cleanEndpoint = normalizedPath.startsWith("/api") 
+  const apiPath = normalizedPath.startsWith("/api") 
     ? normalizedPath 
     : `/api${normalizedPath}`;
+
+  const fullUrl = `${BASE_URL}${apiPath}`;
 
   const idOperador = user?.idFuncionario ?? user?.id ?? payload?.id ?? "1";
   const idUnidade = user?.idUnidade ?? user?.unidade?.idUnidade ?? user?.unidade?.id ?? user?.unidadeId ?? "1";
@@ -55,7 +59,7 @@ export async function apiFetch(endpoint, options = {}) {
     ...options.headers,
   };
 
-  const response = await fetch(cleanEndpoint, { ...options, headers });
+  const response = await fetch(fullUrl, { ...options, headers });
 
   if (!response.ok) {
     if (response.status === 401) {
