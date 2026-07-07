@@ -4,7 +4,7 @@ import {
   Clock, Info, ArrowLeft, Type 
 } from "lucide-react";
 import ModalLateral from '../../components/modal/ModalLateral';
-import { apiFetch } from "../../services/api";
+import apiFetch from "../../services/api";
 import { useAuth } from "../../context/AuthContext";
 
 const getDataHoje = () => {

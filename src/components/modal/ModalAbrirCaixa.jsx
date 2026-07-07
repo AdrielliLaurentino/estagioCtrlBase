@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Loader2, AlertTriangle } from "lucide-react";
 import { useTheme } from "../../context/ThemeContext";
-import { apiFetch } from "../../services/api";
+import apiFetch from "../../services/api";
 
 const formatarMoedaInput = (valorRaw) => {
   const limpo = valorRaw.replace(/\D/g, "");

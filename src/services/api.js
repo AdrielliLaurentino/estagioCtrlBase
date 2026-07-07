@@ -34,4 +34,5 @@ api.interceptors.response.use(
   }
 );
 
+export const apiFetch = api;
 export default api;

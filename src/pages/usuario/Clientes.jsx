@@ -4,7 +4,7 @@ import { ChevronDown, Check, Loader2, AlertCircle, Search, User } from "lucide-r
 import TabelaBase from "../../components/common/TabelaBase";
 import CadastroCliente from "../../components/register/CadastroCliente";
 import { useTheme } from "../../context/ThemeContext";
-import { apiFetch } from "../../services/api"; 
+import apiFetch from "../../services/api";
 import clientesIcon from "../../assets/icons/clientes.png"; 
 import cadastroIcon from "../../assets/icons/cadastro.png"; 
 

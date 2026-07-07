@@ -7,7 +7,7 @@ import {
 import financeiroIcon from "../../assets/icons/financeiro.png";
 import MenuInferior from "../../layouts/MenuInferior";
 import TabelaBase from "../../components/common/TabelaBase"; 
-import { apiFetch } from "../../services/api";
+import apiFetch from "../../services/api";
 
 const formatarTitleCase = (text) => {
   if (!text) return "";

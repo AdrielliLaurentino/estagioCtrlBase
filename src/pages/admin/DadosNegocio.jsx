@@ -7,7 +7,7 @@ import {
   Building2, MapPin, Phone, Search, Save, ArrowLeft, 
   AlertCircle, CheckCircle, Clock, Copy, CalendarDays, Loader2 
 } from "lucide-react";
-import { apiFetch } from "../../services/api"; 
+import apiFetch from "../../services/api";
 
 const limparFormatacao = (valor) => valor ? String(valor).replace(/\D/g, "") : "";
 

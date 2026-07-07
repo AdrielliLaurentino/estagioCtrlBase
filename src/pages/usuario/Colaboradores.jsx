@@ -4,7 +4,7 @@ import { Search, Loader2, AlertCircle, ChevronDown, Check } from "lucide-react";
 import TabelaBase from "../../components/common/TabelaBase";
 import CadastroColaborador from "../../components/register/CadastroColaborador";
 import { useTheme } from "../../context/ThemeContext";
-import { apiFetch } from "../../services/api"; 
+import apiFetch from "../../services/api";
 import colabIcon from "../../assets/icons/colab.png"; 
 import cadastroIcon from "../../assets/icons/cadastro.png"; 
 

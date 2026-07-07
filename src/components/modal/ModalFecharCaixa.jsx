@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, useMemo } from "react";
 import { Loader2, AlertTriangle, CheckCircle2 } from "lucide-react";
 import { useTheme } from "../../context/ThemeContext";
-import { apiFetch } from "../../services/api";
+import apiFetch from "../../services/api";
 
 const parseValorSeguro = (str) => {
   if (!str || typeof str !== "string" || str.trim() === "") return 0;

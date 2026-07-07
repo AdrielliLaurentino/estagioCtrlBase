@@ -7,8 +7,7 @@ import {
 
 import ModalAbrirCaixa from "../../components/modal/ModalAbrirCaixa";
 import ModalFecharCaixa from "../../components/modal/ModalFecharCaixa";
-import { apiFetch } from "../../services/api";
-
+import apiFetch from "../../services/api";
 import financeiroIcon from "../../assets/icons/financeiro.png";
 import dinheiroIcon from "../../assets/icons/dinheiro.png";
 import crediarioIcon from "../../assets/icons/crediario.png";

@@ -6,10 +6,7 @@ import {
   Download, Loader2, AlertCircle, MessageSquare
 } from "lucide-react";
 import { useTheme } from "../../context/ThemeContext";
-
-// ALTERAÇÃO: Removido o const API_BASE = "http://localhost:8080";
-// MOTIVO: A URL base e o roteamento agora são gerenciados de forma centralizada pelo apiFetch.
-import { apiFetch } from "../../services/api";
+import apiFetch from "../../services/api";
 
 const formatarTitleCase = (text) => {
     if (!text) return "";
@@ -36,8 +33,6 @@ export default function ContasReceber() {
     setClienteSelecionado(null);
 
     try {
-      // ALTERAÇÃO: Substituição do 'fetch' nativo pelo 'apiFetch' criado no seu serviço.
-      // MOTIVO: Garante a injeção automática de tokens de autenticação (Bearer) e headers padrão (id-operador, id-unidade).
       const response = await apiFetch(`/contas-receber/cliente/${buscaIdCliente}`);
       
       const contasDoCliente = await response.json();
@@ -51,7 +46,6 @@ export default function ContasReceber() {
 
     } catch (error) {
       console.error("Falha na requisição:", error);
-      // ALTERAÇÃO: Tratamento padronizado da mensagem de erro utilizando as propriedades retornadas pelo backend, caso existam.
       setErro(error.message || "Não foi possível conectar ao servidor.");
     } finally {
       setLoading(false);

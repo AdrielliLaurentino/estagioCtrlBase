@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Loader2, Info, ArrowLeft, Target, Award } from "lucide-react";
 import ModalLateral from "../common/ModalLateral"; 
-import { apiFetch } from "../../services/api";
+import apiFetch from "../../services/api";
 import { useAuth } from "../../context/AuthContext";
 
 export default function CadastroTarefa({ isOpen, onClose, onSucesso }) {

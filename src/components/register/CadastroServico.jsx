@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Loader2, Info, ArrowLeft, Briefcase, Clock, Users, CalendarRange } from "lucide-react";
-import ModalLateral from "../common/ModalLateral"; // Ajuste o path conforme sua arquitetura
-import { apiFetch } from "../../services/api";
+import ModalLateral from "../common/ModalLateral";
+import apiFetch from "../../services/api";
 import { useAuth } from "../../context/AuthContext";
 
 export default function CadastroServico({ isOpen, onClose, onSucesso }) {

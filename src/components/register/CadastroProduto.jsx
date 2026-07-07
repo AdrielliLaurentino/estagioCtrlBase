@@ -4,7 +4,7 @@ import Webcam from "react-webcam";
 import ModalLateral from "../common/ModalLateral";
 import iconeEditar from "../../assets/icons/editarproduto.png";
 import { produtoService } from "../../services/produtoService";
-import { apiFetch } from "../../services/api";
+import apiFetch from "../../services/api";
 
 const aplicarMascaraMoeda = (valor) => {
   if (!valor) return "";

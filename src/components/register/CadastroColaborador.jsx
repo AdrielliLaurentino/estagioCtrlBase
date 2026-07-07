@@ -3,7 +3,7 @@ import { User, Loader2, Camera, ChevronDown, Calendar, Type, Image as ImageIcon,
 import Webcam from "react-webcam";
 import ModalLateral from "../common/ModalLateral";
 import { validarCPF } from "../../utils/validadores"; 
-import { apiFetch } from "../../services/api";
+import apiFetch from "../../services/api";
 import { useAuth } from "../../context/AuthContext";
 
 const MAPA_PERFIL_ACESSO = {

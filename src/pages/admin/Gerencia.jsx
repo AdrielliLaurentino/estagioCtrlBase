@@ -5,7 +5,7 @@ import {
   Target, Award
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
-import { apiFetch } from "../../services/api";
+import apiFetch from "../../services/api";
 import CadastroServico from "../../components/register/CadastroServico";
 import CadastroExecao from "../../components/register/CadastroExecao"; 
 import CadastroTarefa from "../../components/register/CadastroTarefa"; 

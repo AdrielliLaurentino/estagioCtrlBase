@@ -8,7 +8,7 @@ import {
   BarChart2, Eye, EyeOff, Wind, LineChart, Check
 } from "lucide-react";
 
-import { apiFetch } from "../services/api";
+import apiFetch  from "../services/api";
 import { useAuth } from "../context/AuthContext";
 import CadastroCliente from "../components/register/CadastroCliente";
 import CarrinhoCompras from "../components/pdv/CarrinhoCompras";
@@ -36,6 +36,15 @@ const marqueeStyles = `
   .marquee-content:hover { animation-play-state: paused; }
   @keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-100%); } }
 `;
+
+function ShortcutCard({ title, imgSrc, onClick }) {
+  return (
+    <div onClick={onClick} className="flex flex-col items-center justify-center p-4 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl shadow-sm cursor-pointer hover:shadow-md transition-shadow">
+      <img src={imgSrc} alt={title} className="w-8 h-8 mb-2 object-contain" />
+      <span className="text-xs font-bold text-center">{title}</span>
+    </div>
+  );
+}
 
 export default function Home() {
   const navigate = useNavigate();
@@ -480,79 +489,8 @@ export default function Home() {
             </span>
           </div>
           <div className="flex-1 flex flex-col justify-center items-center bg-[var(--bg-body)] rounded-2xl p-6 border border-[var(--border-color)] mb-5">
-             <p className="text-[11px] font-semibold opacity-50 mb-2 uppercase tracking-widest">Saldo Parcial Operante</p>
-             <p className="text-3xl font-black truncate">{renderValorSensivel(meta.atual, 'moeda')}</p>
-          </div>
-          <div className="grid grid-cols-2 gap-3 mt-auto shrink-0">
-             <button onClick={() => navigate('/financeiro/caixa')} className="text-[10px] font-bold uppercase px-3 py-2.5 rounded-xl bg-[var(--bg-body)] border border-[var(--border-color)] opacity-80 hover:opacity-100 hover:bg-[var(--border-color)] transition-colors outline-none text-center">
-               Movimentar
-             </button>
-             <button onClick={() => navigate('/financeiro/fechar-caixa')} className="text-[10px] font-bold uppercase px-3 py-2.5 rounded-xl bg-[var(--bg-sidebar)] text-white shadow-sm opacity-90 hover:opacity-100 transition-opacity outline-none text-center border border-transparent">
-               Fechar Caixa
-             </button>
-          </div>
-        </div>
-
-        <div className="col-span-1 lg:col-span-4 flex flex-col h-full bg-[var(--bg-card)] rounded-2xl p-6 border border-[var(--border-color)] shadow-sm">
-          <div className="flex justify-between items-center mb-5 shrink-0">
-            <div className="flex items-center gap-2 opacity-60"><CheckCircle2 size={16} /><h3 className="text-xs font-bold uppercase tracking-widest">Tarefas</h3></div>
-            <span className="text-[10px] font-bold px-2.5 py-1 rounded-lg border border-[var(--border-color)]">{tarefas.filter(t => t.concluida).length}/{tarefas.length}</span>
-          </div>
-          <div className="flex-1 overflow-y-auto custom-scrollbar flex flex-col gap-2.5 pr-2">
-             {tarefas.length === 0 ? <p className="text-[11px] font-bold opacity-30 text-center mt-6 uppercase tracking-widest">Tudo feito!</p> : tarefas.map(tarefa => (
-               <label key={tarefa.id} className="flex items-center gap-4 p-3.5 rounded-[18px] cursor-pointer bg-[var(--bg-body)] shrink-0">
-                 <input type="checkbox" checked={tarefa.concluida} onChange={() => toggleTarefa(tarefa.id, tarefa.concluida)} className="w-5 h-5 border-2 rounded-md transition-all cursor-pointer" style={{ borderColor: tarefa.concluida ? 'var(--bg-sidebar)' : 'var(--border-color)' }} />
-                 <span className={`text-sm font-semibold select-none ${tarefa.concluida ? 'opacity-30 line-through' : 'opacity-90'}`}>{tarefa.texto}</span>
-               </label>
-             ))}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-
-  const renderProfessor = () => (
-    <div className="flex flex-col h-full gap-5 lg:gap-6 min-h-0 text-[var(--text-main)]">
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 shrink-0">
-        <div className="col-span-1 lg:col-span-8 rounded-2xl p-8 relative overflow-hidden flex items-center shadow-sm text-white" style={{ backgroundColor: 'var(--bg-sidebar)' }}>
-          <div className="relative z-10 flex items-center gap-5 w-full">
-            <div className="p-4 bg-white/10 rounded-xl backdrop-blur-md shrink-0 shadow-inner hidden sm:block"><Activity size={28} /></div>
-            <div className="flex-1">
-              <span className="text-[10px] font-bold uppercase tracking-widest bg-white/10 px-2 py-1 rounded inline-block mb-2">Próxima Aula</span>
-              <h2 className="text-2xl font-bold mb-1 leading-none truncate">Aulas do Dia</h2>
-              <p className="opacity-80 text-sm mt-1">{renderValorSensivel(agenda.length, 'numero')} aulas programadas.</p>
-            </div>
-          </div>
-        </div>
-        <div className="col-span-1 lg:col-span-4 rounded-2xl p-6 shadow-sm border flex flex-col justify-center items-center bg-[var(--bg-card)] border-[var(--border-color)]">
-           <ClipboardList size={32} className="opacity-20 mb-2" />
-           <span className="text-2xl font-black">{renderValorSensivel(avaliacoesPendentes, 'numero')}</span>
-           <span className="text-[10px] font-bold uppercase opacity-50 tracking-widest text-center mt-1">Avaliações Pendentes</span>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 lg:gap-5 shrink-0">
-         <ShortcutCard title="Meus Alunos" imgSrc={imgClientes} onClick={() => navigate('/clientes')} />
-         <ShortcutCard title="Treinos" imgSrc={imgTreinos} onClick={() => setAbrirModalEmBreve(true)} />
-         <ShortcutCard title="Avaliação" imgSrc={imgAvaliacao} onClick={() => navigate('/avaliacoes/nova')} />
-         <ShortcutCard title="Agenda" imgSrc={imgHistorico} onClick={() => navigate('/agenda')} />
-      </div>
-
-      <div className="flex-1 grid grid-cols-1 gap-5 min-h-0 pb-6">
-        <div className="rounded-2xl p-6 shadow-sm border flex flex-col h-full overflow-hidden bg-[var(--bg-card)] border-[var(--border-color)]">
-          <div className="flex items-center gap-2 mb-6 shrink-0 opacity-60"><CalendarIcon size={16} /><h3 className="text-xs font-bold uppercase tracking-widest">Meus Alunos Hoje</h3></div>
-          <div className="flex-1 overflow-y-auto custom-scrollbar flex flex-col gap-3 pr-2">
-             {agenda.length === 0 ? <p className="text-[11px] font-bold opacity-30 text-center mt-6 uppercase tracking-widest">Sem turmas hoje.</p> : agenda.map(item => (
-                <div key={item.id} className="flex items-center justify-between p-4 rounded-xl bg-[var(--bg-body)] border border-[var(--border-color)]">
-                   <div className="flex items-center gap-4">
-                      <span className="text-xs font-black opacity-60 px-2 py-1 rounded-md bg-[var(--bg-card)]">{item.hora}</span>
-                      <span className="text-sm font-bold opacity-90">{item.cliente}</span>
-                   </div>
-                   <button className="text-[10px] font-bold uppercase px-3 py-1.5 rounded-lg opacity-70 hover:opacity-100 transition-opacity outline-none bg-[var(--bg-sidebar)] text-white border border-[var(--border-color)]">
-                     Registrar
-                   </button>
-                </div>
-             ))}
+             <p className="text-[11px] font-semibold opacity-50 mb-2">Fluxo de Caixa Diário</p>
+             <span className="text-xl font-black">{renderValorSensivel(meta.atual, 'moeda')}</span>
           </div>
         </div>
       </div>
@@ -560,73 +498,13 @@ export default function Home() {
   );
 
   return (
-    <div className="w-full h-full flex-1 flex flex-col p-4 md:p-6 lg:p-8 font-sans relative overflow-hidden bg-[var(--bg-body)] text-[var(--text-main)]">
+    <div className="w-full h-full p-4 lg:p-6 overflow-y-auto custom-scrollbar">
       <style>{marqueeStyles}</style>
-
-      <header className="flex flex-col md:flex-row items-center justify-between mb-6 shrink-0 gap-4 min-h-[60px]">
-        <div className="w-full md:w-1/3 flex items-center justify-center md:justify-start gap-4">
-          <div className="text-center md:text-left text-[var(--text-main)]">
-            <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight leading-tight truncate">
-              {saudacao}, {user.nomeRegistro || user.nomeCompleto || "Usuário"}.
-            </h1>
-            <p className="text-sm opacity-60 font-medium mt-1 uppercase tracking-widest">Visão geral do sistema</p>
-          </div>
-          <button 
-            onClick={() => setMostrarDados(!mostrarDados)} 
-            className="p-2.5 rounded-full bg-[var(--bg-card)] border border-[var(--border-color)] opacity-70 hover:opacity-100 transition-all active:scale-95 outline-none text-[var(--text-main)]"
-            title={mostrarDados ? "Ocultar dados sensíveis" : "Mostrar dados sensíveis"}
-          >
-            {mostrarDados ? <Eye size={18} /> : <EyeOff size={18} />}
-          </button>
-        </div>
-        
-        <div className="w-full md:w-1/3 flex justify-center">
-          <div className="relative w-full max-w-md">
-            <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 opacity-40 text-[var(--text-main)]" />
-            <input type="text" placeholder="Pesquisar..." className="w-full py-2.5 pl-12 pr-4 rounded-full text-sm outline-none font-medium focus:ring-2 focus:ring-[var(--bg-sidebar)] transition-all bg-[var(--bg-card)] border border-[var(--border-color)] text-[var(--text-main)]" />
-          </div>
-        </div>
-        <div className="hidden md:block w-1/3" />
-      </header>
-
-      <main className="flex-1 min-h-0 overflow-y-auto lg:overflow-hidden pb-28 lg:pb-0 custom-scrollbar pr-1 lg:pr-0">
-        {cargoUser.includes("cliente") || cargoUser.includes("aluno") ? renderCliente() :
-         cargoUser.includes("dono") || cargoUser.includes("gerente") || cargoUser.includes("admin") ? renderGerente() : 
-         cargoUser.includes("professor") || cargoUser.includes("instrutor") || cargoUser.includes("personal") ? renderProfessor() : 
-         renderRecepcao()}
-      </main>
-
-      <MenuInferior items={menuItensInferior} activeIndex={activeMenuIndex} setActiveIndex={setActiveMenuIndex} />
-
-      {abrirNovoCliente && <CadastroCliente isOpen={abrirNovoCliente} onClose={() => setAbrirNovoCliente(false)} />}
-      {abrirCarrinho && (
-        <div className="fixed inset-0 z-[2000] flex justify-end p-0 sm:p-4 bg-black/60 backdrop-blur-sm">
-          <div className="w-full sm:w-[450px] h-full relative sm:rounded-[40px] overflow-hidden">
-             <CarrinhoCompras onClose={() => setAbrirCarrinho(false)} />
-          </div>
-        </div>
-      )}
-      <ModalOpcoesEstoque isOpen={modalOpcoesEstoque} onClose={() => setModalOpcoesEstoque(false)} onSelect={(tipo) => { if(tipo === 'entrada') setAbrirEntradaEstoque(true); else setAbrirPerdaEstoque(true);}} />
-      <ModalRegistroEntrada isOpen={abrirEntradaEstoque} onClose={() => setAbrirEntradaEstoque(false)} />
-      <ModalRegistroPerda isOpen={abrirPerdaEstoque} onClose={() => setAbrirPerdaEstoque(false)} />
       
-      <ModalEmBreve isOpen={abrirModalEmBreve} onClose={() => setAbrirModalEmBreve(false)} />
+      {cargoUser.includes("dono") || cargoUser.includes("gerente") || cargoUser.includes("admin") ? renderGerente() : 
+       cargoUser.includes("cliente") || cargoUser.includes("aluno") ? renderCliente() : renderRecepcao()}
+      
+      <MenuInferior itens={menuItensInferior} activeIndex={activeMenuIndex} setActiveIndex={setActiveMenuIndex} />
     </div>
-  );
-}
-
-function ShortcutCard({ title, imgSrc, onClick }) {
-  return (
-    <button onClick={onClick} className="flex flex-col items-center justify-center gap-3 h-full py-6 rounded-2xl shadow-sm hover:shadow-md transition-all hover:-translate-y-1 group outline-none bg-[var(--bg-card)] border border-[var(--border-color)] text-[var(--text-main)]">
-      <div 
-        className="w-7 h-7 transition-transform group-hover:scale-110 shrink-0 opacity-70 group-hover:opacity-100"
-        style={{
-          backgroundColor: "currentColor",
-          WebkitMask: `url(${imgSrc}) center/contain no-repeat`,
-          mask: `url(${imgSrc}) center/contain no-repeat`
-        }}
-      />
-      <span className="text-[10px] lg:text-[11px] font-extrabold uppercase tracking-widest opacity-70 truncate px-2 w-full text-center">{title}</span>
-    </button>
   );
 }

@@ -4,7 +4,7 @@ import CarrinhoCompras from "../../components/pdv/CarrinhoCompras";
 import TabelaBase from "../../components/common/TabelaBase";
 import { useTheme } from "../../context/ThemeContext";
 import { useCarrinho } from "../../context/CarrinhoContext"; 
-import { apiFetch } from "../../services/api"; 
+import apiFetch from "../../services/api";
 import iconeCarrinho from "../../assets/icons/carrinho.png";
 
 const formatadorMoeda = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });

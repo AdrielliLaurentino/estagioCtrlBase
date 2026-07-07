@@ -19,7 +19,7 @@ import movEstoqueIcon from "../../assets/icons/movEstoque.png";
 import atencaoProdutoIcon from "../../assets/icons/atencaoproduto.png";
 import importarProdutoIcon from "../../assets/icons/importarProduto.png"; 
 import exportarProdutoIcon from "../../assets/icons/exportarProduto.png"; 
-import { apiFetch } from "../../services/api";
+import apiFetch from "../../services/api";
 import { produtoService } from "../../services/produtoService";
 
 const normalize = (text) => String(text).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");

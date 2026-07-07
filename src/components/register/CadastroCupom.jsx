@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Ticket, Loader2, ChevronDown, Calendar, Type, ChevronUp } from "lucide-react";
 import ModalLateral from "../common/ModalLateral";
-import { apiFetch } from "../../services/api";
+import apiFetch from "../../services/api";
 import { useAuth } from "../../context/AuthContext";
 
 const valoresIniciais = {
