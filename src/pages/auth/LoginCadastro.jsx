@@ -1,39 +1,60 @@
 import React, { useState, useEffect } from "react";
-import { Eye, EyeOff, AlertCircle, Search, ArrowLeft, ChevronDown, CheckCircle, Lock, ShieldCheck, XCircle, UserPlus, UserCheck, Calendar, Type } from "lucide-react"; 
+import { Eye, EyeOff, AlertCircle, Search, ArrowLeft, ChevronDown, CheckCircle, Lock, ShieldCheck, XCircle, UserPlus, UserCheck, Calendar, Type } from "lucide-react";
 import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 
-import logoImage from "../../assets/icons/logobase.png"; 
+import logoImage from "../../assets/icons/logobase.png";
 import { validarCPF } from "../../utils/validadores";
 import { useAuth } from "../../context/AuthContext";
 
-const API_BASE = "/api/auth";
+const BASE_URL = import.meta.env?.VITE_API_URL || process.env?.REACT_APP_API_URL || "";
+const API_BASE = `${BASE_URL}/api/auth`;
+
 const limparFormatacao = (valor) => (valor ? String(valor).replace(/\D/g, "") : "");
+
 const limparPuntuacaoLogin = (valor) => {
   if (!valor) return "";
   const str = String(valor).trim();
-  if (str.includes("@")) return str; 
+  if (str.includes("@")) return str;
   return str.replace(/[^a-zA-Z0-9]/g, "");
 };
 
 const aplicarMascara = (campo, valor) => {
   if (!valor) return "";
   let v = String(valor).replace(/\D/g, "");
+  
   if (campo === "documentoNumero") {
-    if (v.length <= 11) v = v.replace(/(\d{3})(\d)/, "$1.$2").replace(/(\d{3})(\d)/, "$1.$2").replace(/(\d{3})(\d{1,2})$/, "$1-$2");
-    else v = v.replace(/^(\d{2})(\d)/, "$1.$2").replace(/^(\d{2})\.(\d{3})(\d)/, "$1.$2.$3").replace(/\.(\d{3})(\d)/, ".$1/$2").replace(/(\d{4})(\d)/, "$1-$2");
+    if (v.length <= 11) {
+      v = v.replace(/(\d{3})(\d)/, "$1.$2").replace(/(\d{3})(\d)/, "$1.$2").replace(/(\d{3})(\d{1,2})$/, "$1-$2");
+    } else {
+      v = v.replace(/^(\d{2})(\d)/, "$1.$2").replace(/^(\d{2})\.(\d{3})(\d)/, "$1.$2.$3").replace(/\.(\d{3})(\d)/, ".$1/$2").replace(/(\d{4})(\d)/, "$1-$2");
+    }
     return v.slice(0, 18);
   }
-  if (campo === "cpf") { v = v.replace(/(\d{3})(\d)/, "$1.$2").replace(/(\d{3})(\d)/, "$1.$2").replace(/(\d{3})(\d{1,2})$/, "$1-$2"); return v.slice(0, 14); }
-  if (campo.includes("telefone") || campo === "telefoneSocio") { v = v.replace(/^(\d{2})(\d)/, "($1) $2").replace(/(\d{5})(\d)/, "$1-$2"); return v.slice(0, 15); }
-  if (campo === "cep") { v = v.replace(/^(\d{5})(\d)/, "$1-$2"); return v.slice(0, 9); }
-  if (campo === "dataNascimento") {
-      if (v.length > 8) v = v.slice(0, 8);
-      if (v.length > 4) v = v.replace(/(\d{2})(\d{2})(\d{1,4})/, "$1/$2/$3");
-      else if (v.length > 2) v = v.replace(/(\d{2})(\d{1,4})/, "$1/$2");
-      return v;
+  
+  if (campo === "cpf") { 
+    v = v.replace(/(\d{3})(\d)/, "$1.$2").replace(/(\d{3})(\d)/, "$1.$2").replace(/(\d{3})(\d{1,2})$/, "$1-$2"); 
+    return v.slice(0, 14); 
   }
+  
+  if (campo.includes("telefone") || campo === "telefoneSocio") { 
+    v = v.replace(/^(\d{2})(\d)/, "($1) $2").replace(/(\d{5})(\d)/, "$1-$2"); 
+    return v.slice(0, 15); 
+  }
+  
+  if (campo === "cep") { 
+    v = v.replace(/^(\d{5})(\d)/, "$1-$2"); 
+    return v.slice(0, 9); 
+  }
+  
+  if (campo === "dataNascimento") {
+    if (v.length > 8) v = v.slice(0, 8);
+    if (v.length > 4) v = v.replace(/(\d{2})(\d{2})(\d{1,4})/, "$1/$2/$3");
+    else if (v.length > 2) v = v.replace(/(\d{2})(\d{1,4})/, "$1/$2");
+    return v;
+  }
+  
   return valor;
 };
 
@@ -54,19 +75,25 @@ const tratarErroBackend = async (response) => {
 
 const CustomInput = ({ name, control, label, type = "text", mask, isPassword, showPassState, setShowPassState, onSearch, showSearchBtn, required, loadingCnpj, onBlurCustom }) => {
   const [isFocused, setIsFocused] = useState(false);
+  
   return (
     <Controller
-      name={name} control={control}
+      name={name} 
+      control={control}
       render={({ field: { onChange, onBlur, value, name: fieldName }, fieldState: { error } }) => {
         const hasValue = value && value.length > 0;
         return (
           <div className="floating-group">
             <input
-              id={fieldName} name={fieldName}
+              id={fieldName} 
+              name={fieldName}
               type={isPassword ? (showPassState ? "text" : "password") : type}
-              className={`floating-input ${error ? "error" : ""}`} placeholder=" "
-              value={value || ""} onChange={e => onChange(mask ? aplicarMascara(mask === true ? fieldName : mask, e.target.value) : e.target.value)}
-              onFocus={() => setIsFocused(true)} onBlur={(e) => { setIsFocused(false); onBlur(e); if(onBlurCustom) onBlurCustom(e.target.value); }}
+              className={`floating-input ${error ? "error" : ""}`} 
+              placeholder=" "
+              value={value || ""} 
+              onChange={e => onChange(mask ? aplicarMascara(mask === true ? fieldName : mask, e.target.value) : e.target.value)}
+              onFocus={() => setIsFocused(true)} 
+              onBlur={(e) => { setIsFocused(false); onBlur(e); if(onBlurCustom) onBlurCustom(e.target.value); }}
               autoComplete={isPassword ? "current-password" : "off"}
             />
             <label htmlFor={fieldName} className={`floating-label ${hasValue || isFocused ? "active" : ""} ${error ? "error" : ""}`}>
@@ -100,7 +127,8 @@ const CustomInputData = ({ name, control, label, required }) => {
 
   return (
     <Controller
-      name={name} control={control}
+      name={name} 
+      control={control}
       render={({ field: { onChange, onBlur, value, name: fieldName }, fieldState: { error } }) => {
         const hasValue = value && value.length > 0;
         
@@ -117,17 +145,25 @@ const CustomInputData = ({ name, control, label, required }) => {
             <div className="relative flex items-center w-full">
               {!usarCalendario ? (
                 <input
-                  id={fieldName} name={fieldName} type="text"
-                  className={`floating-input ${error ? "error" : ""} pr-10`} placeholder=" "
-                  value={value || ""} onChange={e => onChange(aplicarMascara("dataNascimento", e.target.value))}
-                  onFocus={() => setIsFocused(true)} onBlur={(e) => { setIsFocused(false); onBlur(e); }}
+                  id={fieldName} 
+                  name={fieldName} 
+                  type="text"
+                  className={`floating-input ${error ? "error" : ""} pr-10`} 
+                  placeholder=" "
+                  value={value || ""} 
+                  onChange={e => onChange(aplicarMascara("dataNascimento", e.target.value))}
+                  onFocus={() => setIsFocused(true)} 
+                  onBlur={(e) => { setIsFocused(false); onBlur(e); }}
                 />
               ) : (
                 <input
-                  id={fieldName} name={fieldName} type="date"
+                  id={fieldName} 
+                  name={fieldName} 
+                  type="date"
                   className={`floating-input ${error ? "error" : ""} pr-10`}
                   value={valorNativo()} 
-                  onFocus={() => setIsFocused(true)} onBlur={(e) => { setIsFocused(false); onBlur(e); }}
+                  onFocus={() => setIsFocused(true)} 
+                  onBlur={(e) => { setIsFocused(false); onBlur(e); }}
                   onChange={(e) => {
                       const val = e.target.value;
                       if (!val) return onChange("");
@@ -212,14 +248,22 @@ const STYLES = `
   }
 `;
 
-const loginSchema = yup.object({ login: yup.string().required("Campo obrigatório"), senha: yup.string().required("Campo obrigatório") });
+const loginSchema = yup.object({ 
+  login: yup.string().required("Campo obrigatório"), 
+  senha: yup.string().required("Campo obrigatório") 
+});
+
 const empresaPasso1Schema = yup.object({
-  documentoNumero: yup.string().required("Obrigatório").test("cpf-ou-cnpj", "Inválido", val => { const cleanVal = val ? val.replace(/\D/g, "") : ""; return cleanVal.length === 11 || cleanVal.length === 14; }),
+  documentoNumero: yup.string().required("Obrigatório").test("cpf-ou-cnpj", "Inválido", val => { 
+    const cleanVal = val ? val.replace(/\D/g, "") : ""; 
+    return cleanVal.length === 11 || cleanVal.length === 14; 
+  }),
   razaoSocial: yup.string().required("Obrigatório"),
   nomeFantasia: yup.string().required("Obrigatório"),
   emailContato: yup.string().email("E-mail inválido").required("Obrigatório"),
   telefoneEmpresa: yup.string().required("Obrigatório"),
 });
+
 const empresaPasso2Schema = yup.object({
   cep: yup.string().required("Obrigatório"),
   logradouro: yup.string().required("Obrigatório"),
@@ -242,6 +286,7 @@ const socioSchema = yup.object({
 
 export default function LoginCadastro() {
   const { signIn, handleLoginSuccess } = useAuth();
+  
   const [isLogin, setIsLogin] = useState(true);
   const [regStep, setRegStep] = useState(1); 
   const [isNovoTitular, setIsNovoTitular] = useState(true);
@@ -265,6 +310,7 @@ export default function LoginCadastro() {
   const [loadingCnpj, setLoadingCnpj] = useState(false);
   const [erroGeral, setErroGeral] = useState("");
   const [sucessoMsg, setSucessoMsg] = useState("");
+  
   const { control: controlLogin, handleSubmit: handleSubmitLogin } = useForm({ resolver: yupResolver(loginSchema), mode: "all" });
   const { control: controlStep1, trigger: triggerStep1, setValue: setStep1Value, getValues: getStep1Values } = useForm({ resolver: yupResolver(empresaPasso1Schema), mode: "all" });
   const { control: controlStep2, trigger: triggerStep2, setValue: setStep2Value, getValues: getStep2Values } = useForm({ resolver: yupResolver(empresaPasso2Schema), mode: "all" });
@@ -273,7 +319,10 @@ export default function LoginCadastro() {
   useEffect(() => {
     if (window.innerWidth > 768) {
       const cover = document.querySelector(".black-cover");
-      if (cover) { cover.style.clipPath = "polygon(15% 0, 100% 0, 100% 100%, 0% 100%)"; cover.style.left = "35vw"; }
+      if (cover) { 
+        cover.style.clipPath = "polygon(15% 0, 100% 0, 100% 100%, 0% 100%)"; 
+        cover.style.left = "35vw"; 
+      }
     }
   }, []);
 
@@ -281,7 +330,7 @@ export default function LoginCadastro() {
 
   const complementarDadosUnidade = async (dadosUsuario) => {
     try {
-      const res = await fetch('/api/unidades/dados-negocio', {
+      const res = await fetch(`${BASE_URL}/api/unidades/dados-negocio`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -323,7 +372,10 @@ export default function LoginCadastro() {
   };
 
   const onSubmitLogin = async (data) => {
-    setLoading(true); setErroGeral(""); setSucessoMsg("");
+    setLoading(true); 
+    setErroGeral(""); 
+    setSucessoMsg("");
+    
     try {
       const loginLimpo = limparPuntuacaoLogin(data.login);
       let dadosUsuario = await signIn(loginLimpo, data.senha);
@@ -343,11 +395,16 @@ export default function LoginCadastro() {
       } else {
         setErroGeral(err.message || "Conta inativa. Verifique o seu e-mail para ativação.");
       }
-    } finally { setLoading(false); } 
+    } finally { 
+      setLoading(false); 
+    } 
   };
 
   const onSubmitCadastroNovoUsuario = async (socioData) => {
-    setLoading(true); setErroGeral(""); setSucessoMsg("");
+    setLoading(true); 
+    setErroGeral(""); 
+    setSucessoMsg("");
+    
     const step1Data = getStep1Values();
     const step2Data = getStep2Values();
     const donoEmailForm = socioData.emailSocio.toLowerCase().trim();
@@ -361,25 +418,37 @@ export default function LoginCadastro() {
     try {
       const payload = {
         empresa: { 
-          razaoSocial: step1Data.razaoSocial, nomeFantasia: step1Data.nomeFantasia, 
+          razaoSocial: step1Data.razaoSocial, 
+          nomeFantasia: step1Data.nomeFantasia, 
           documentoNumero: limparFormatacao(step1Data.documentoNumero), 
           tipoDocumento: limparFormatacao(step1Data.documentoNumero).length === 11 ? "CPF" : "CNPJ", 
-          emailContato: step1Data.emailContato, telefone: limparFormatacao(step1Data.telefoneEmpresa),
-          cep: limparFormatacao(step2Data.cep), logradouro: step2Data.logradouro,
-          numero: step2Data.numero, bairro: step2Data.bairro,
-          cidade: step2Data.cidade, uf: step2Data.uf
+          emailContato: step1Data.emailContato, 
+          telefone: limparFormatacao(step1Data.telefoneEmpresa),
+          cep: limparFormatacao(step2Data.cep), 
+          logradouro: step2Data.logradouro,
+          numero: step2Data.numero, 
+          bairro: step2Data.bairro,
+          cidade: step2Data.cidade, 
+          uf: step2Data.uf
         },
         dono: { 
           nomeCompleto: socioData.nomeCompleto.trim().replace(/\s+/g, ' '), 
-          cpf: limparFormatacao(socioData.cpf), email: donoEmailForm, 
-          login: limparFormatacao(socioData.cpf), senha: socioData.senhaSocio, 
+          cpf: limparFormatacao(socioData.cpf), 
+          email: donoEmailForm, 
+          login: limparFormatacao(socioData.cpf), 
+          senha: socioData.senhaSocio, 
           telefone: limparFormatacao(socioData.telefoneSocio), 
           sexoBiologico: socioData.sexoBiologico.toUpperCase(),
           dataNascimento: dataNascimentoFormatada 
         }
       };
 
-      const response = await fetch(`${API_BASE}/register`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+      const response = await fetch(`${API_BASE}/register`, { 
+        method: "POST", 
+        headers: { "Content-Type": "application/json" }, 
+        body: JSON.stringify(payload) 
+      });
+      
       if (!response.ok) throw new Error(await tratarErroBackend(response));
 
       setActivationEmail(payload.dono.email);
@@ -391,7 +460,9 @@ export default function LoginCadastro() {
       } else {
         setErroGeral(msg);
       }
-    } finally { setLoading(false); }
+    } finally { 
+      setLoading(false); 
+    }
   };
 
   const handleCadastroUsuarioExistente = async () => {
@@ -403,25 +474,40 @@ export default function LoginCadastro() {
       return;
     }
 
-    setLoading(true); setErroGeral(""); setSucessoMsg("");
+    setLoading(true); 
+    setErroGeral(""); 
+    setSucessoMsg("");
+    
     const step1Data = getStep1Values();
     const step2Data = getStep2Values();
 
     try {
       const payload = {
         empresa: { 
-          razaoSocial: step1Data.razaoSocial, nomeFantasia: step1Data.nomeFantasia, 
+          razaoSocial: step1Data.razaoSocial, 
+          nomeFantasia: step1Data.nomeFantasia, 
           documentoNumero: limparFormatacao(step1Data.documentoNumero), 
           tipoDocumento: limparFormatacao(step1Data.documentoNumero).length === 11 ? "CPF" : "CNPJ", 
-          emailContato: step1Data.emailContato, telefone: limparFormatacao(step1Data.telefoneEmpresa),
-          cep: limparFormatacao(step2Data.cep), logradouro: step2Data.logradouro,
-          numero: step2Data.numero, bairro: step2Data.bairro,
-          cidade: step2Data.cidade, uf: step2Data.uf
+          emailContato: step1Data.emailContato, 
+          telefone: limparFormatacao(step1Data.telefoneEmpresa),
+          cep: limparFormatacao(step2Data.cep), 
+          logradouro: step2Data.logradouro,
+          numero: step2Data.numero, 
+          bairro: step2Data.bairro,
+          cidade: step2Data.cidade, 
+          uf: step2Data.uf
         },
-        donoExistente: { login: limparFormatacao(cpf), senha: senha }
+        donoExistente: { 
+          login: limparFormatacao(cpf), 
+          senha: senha 
+        }
       };
 
-      const response = await fetch(`${API_BASE}/register-unit-existing`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+      const response = await fetch(`${API_BASE}/register-unit-existing`, { 
+        method: "POST", 
+        headers: { "Content-Type": "application/json" }, 
+        body: JSON.stringify(payload) 
+      });
 
       if (!response.ok) {
         if (response.status === 404) {
@@ -434,7 +520,9 @@ export default function LoginCadastro() {
       setTimeout(() => handleSwitch(true), 2000);
     } catch (err) {
       setErroGeral(err.message);
-    } finally { setLoading(false); }
+    } finally { 
+      setLoading(false); 
+    }
   };
 
   const onSubmitStep3Form = (e) => {
@@ -446,25 +534,58 @@ export default function LoginCadastro() {
   const handleAtivarConta = async () => {
     if(!activationEmail) { setErroGeral("O campo E-mail é obrigatório."); return; }
     if(otpCode.length < 6) { setErroGeral("Digite o código de 6 dígitos."); return; }
-    setLoading(true); setErroGeral(""); setSucessoMsg("");
+    
+    setLoading(true); 
+    setErroGeral(""); 
+    setSucessoMsg("");
 
     try {
-      const res = await fetch(`${API_BASE}/validate-otp`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email: activationEmail, codigo: otpCode }) });
+      const res = await fetch(`${API_BASE}/validate-otp`, { 
+        method: "POST", 
+        headers: { "Content-Type": "application/json" }, 
+        body: JSON.stringify({ email: activationEmail, codigo: otpCode }) 
+      });
+      
       if (!res.ok) throw new Error(await tratarErroBackend(res));
+      
       setSucessoMsg("Conta ativada com sucesso! A redirecionar para o login...");
-      setTimeout(() => { setIsActivationView(false); setOtpCode(""); setSucessoMsg(""); if(!isLogin) handleSwitch(true); }, 2000);
-    } catch (err) { setErroGeral(err.message); } finally { setLoading(false); }
+      
+      setTimeout(() => { 
+        setIsActivationView(false); 
+        setOtpCode(""); 
+        setSucessoMsg(""); 
+        if(!isLogin) handleSwitch(true); 
+      }, 2000);
+    } catch (err) { 
+      setErroGeral(err.message); 
+    } finally { 
+      setLoading(false); 
+    }
   };
 
   const handleResendOtp = async () => {
     if(!activationEmail) { setErroGeral("Informe o E-mail para podermos reenviar o código."); return; }
-    setLoading(true); setErroGeral(""); setSucessoMsg("");
+    
+    setLoading(true); 
+    setErroGeral(""); 
+    setSucessoMsg("");
+    
     try {
-      const res = await fetch(`${API_BASE}/resend-otp`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email: activationEmail }) });
+      const res = await fetch(`${API_BASE}/resend-otp`, { 
+        method: "POST", 
+        headers: { "Content-Type": "application/json" }, 
+        body: JSON.stringify({ email: activationEmail }) 
+      });
+      
       if (!res.ok) throw new Error(await tratarErroBackend(res));
+      
       setSucessoMsg("Um novo código foi enviado para o seu e-mail.");
       setTimeout(() => setSucessoMsg(""), 4000);
-    } catch (err) { setErroGeral(err.message); } finally { setLoading(false); }
+    } catch (err) { 
+      setErroGeral(err.message); 
+    } finally { 
+      setLoading(false); 
+    }
   };
 
   const handleTrocarSenhaProvisoria = async () => {
@@ -472,11 +593,25 @@ export default function LoginCadastro() {
     const senhasBatem = novaSenha.length > 0 && novaSenha === confirmarNovaSenha;
     if (loading || !temSeisCaracteres || !senhasBatem) return;
     
-    setLoading(true); setErroGeral(""); setSucessoMsg("");
+    setLoading(true); 
+    setErroGeral(""); 
+    setSucessoMsg("");
 
     try {
-      const payload = { login: tempAuthData?.loginUtilizado || tempAuthData?.login, novaSenha: novaSenha };
-      const res = await fetch(`${API_BASE}/change-temp-password`, { method: "POST", headers: { "Content-Type": "application/json", "Authorization": `Bearer ${tempAuthData.token}` }, body: JSON.stringify(payload) });
+      const payload = { 
+        login: tempAuthData?.loginUtilizado || tempAuthData?.login, 
+        novaSenha: novaSenha 
+      };
+      
+      const res = await fetch(`${API_BASE}/change-temp-password`, { 
+        method: "POST", 
+        headers: { 
+          "Content-Type": "application/json", 
+          "Authorization": `Bearer ${tempAuthData.token}` 
+        }, 
+        body: JSON.stringify(payload) 
+      });
+      
       if (!res.ok) throw new Error(await tratarErroBackend(res));
       
       setSucessoMsg("Palavra-passe atualizada! A finalizar o login...");
@@ -486,26 +621,52 @@ export default function LoginCadastro() {
         processarDadosUnidade(dadosCompletos);
       }, 1500);
 
-    } catch (err) { setErroGeral(err.message); } finally { setLoading(false); }
+    } catch (err) { 
+      setErroGeral(err.message); 
+    } finally { 
+      setLoading(false); 
+    }
   };
 
   const handleSwitch = (isLoginMode) => {
-    setIsActivationView(false); setIsTrocaSenhaView(false); setOtpCode(""); setNovaSenha(""); setConfirmarNovaSenha("");
+    setIsActivationView(false); 
+    setIsTrocaSenhaView(false); 
+    setOtpCode(""); 
+    setNovaSenha(""); 
+    setConfirmarNovaSenha("");
+    
     if (window.innerWidth > 768) {
       const cover = document.querySelector(".black-cover");
       if(cover) {
          cover.classList.remove("anim-go-left", "anim-go-right");
-         if (isLoginMode) { cover.classList.add("anim-go-right"); cover.style.clipPath = "polygon(15% 0, 100% 0, 100% 100%, 0% 100%)"; } 
-         else { cover.classList.add("anim-go-left"); cover.style.clipPath = "polygon(0 0, 85% 0, 100% 100%, 0% 100%)"; }
+         if (isLoginMode) { 
+           cover.classList.add("anim-go-right"); 
+           cover.style.clipPath = "polygon(15% 0, 100% 0, 100% 100%, 0% 100%)"; 
+         } else { 
+           cover.classList.add("anim-go-left"); 
+           cover.style.clipPath = "polygon(0 0, 85% 0, 100% 100%, 0% 100%)"; 
+         }
       }
     }
-    setTimeout(() => { setIsLogin(isLoginMode); setErroGeral(""); setSucessoMsg(""); setRegStep(1); }, window.innerWidth > 768 ? 300 : 100);
+    setTimeout(() => { 
+      setIsLogin(isLoginMode); 
+      setErroGeral(""); 
+      setSucessoMsg(""); 
+      setRegStep(1); 
+    }, window.innerWidth > 768 ? 300 : 100);
   };
 
   const buscarCNPJ = async (inputValue) => {
     const docLimpo = limparFormatacao(inputValue);
-    if (docLimpo.length !== 14) { setErroGeral("Para buscar, digite um CNPJ completo (14 dígitos)."); return; }
-    setLoadingCnpj(true); setErroGeral(""); setSucessoMsg("");
+    if (docLimpo.length !== 14) { 
+      setErroGeral("Para buscar, digite um CNPJ completo (14 dígitos)."); 
+      return; 
+    }
+    
+    setLoadingCnpj(true); 
+    setErroGeral(""); 
+    setSucessoMsg("");
+    
     try {
       const res = await fetch(`https://brasilapi.com.br/api/cnpj/v1/${docLimpo}`);
       if (!res.ok) throw new Error("CNPJ não localizado na Receita Federal.");
@@ -523,12 +684,34 @@ export default function LoginCadastro() {
       setStep2Value("cidade", data.municipio || "", { shouldValidate: true });
       setStep2Value("uf", data.uf || "", { shouldValidate: true });
       
-      setSucessoMsg("Dados da empresa importados com sucesso!"); setTimeout(() => setSucessoMsg(""), 4000);
-    } catch (err) { setErroGeral(err.message); } finally { setLoadingCnpj(false); }
+      setSucessoMsg("Dados da empresa importados com sucesso!"); 
+      setTimeout(() => setSucessoMsg(""), 4000);
+    } catch (err) { 
+      setErroGeral(err.message); 
+    } finally { 
+      setLoadingCnpj(false); 
+    }
   };
 
-  const avancarParaPasso2 = async () => { const isValid = await triggerStep1(); if (isValid) { setErroGeral(""); setRegStep(2); } else setErroGeral("Preencha os dados básicos da empresa."); };
-  const avancarParaPasso3 = async () => { const isValid = await triggerStep2(); if (isValid) { setErroGeral(""); setRegStep(3); } else setErroGeral("Preencha todos os campos do endereço."); };
+  const avancarParaPasso2 = async () => { 
+    const isValid = await triggerStep1(); 
+    if (isValid) { 
+      setErroGeral(""); 
+      setRegStep(2); 
+    } else {
+      setErroGeral("Preencha os dados básicos da empresa."); 
+    }
+  };
+  
+  const avancarParaPasso3 = async () => { 
+    const isValid = await triggerStep2(); 
+    if (isValid) { 
+      setErroGeral(""); 
+      setRegStep(3); 
+    } else {
+      setErroGeral("Preencha todos os campos do endereço.");
+    } 
+  };
 
   const temSeisCaracteres = novaSenha.length >= 6;
   const senhasBatem = novaSenha.length > 0 && novaSenha === confirmarNovaSenha;
@@ -537,33 +720,70 @@ export default function LoginCadastro() {
   return (
     <div className="login-fullscreen-wrapper">
       <style dangerouslySetInnerHTML={{ __html: STYLES }} />
-      <div className="black-cover"><div className="black-shape"><img src={logoImage} alt="CtrlBase Logo" className="logo-on-cover" /></div></div>
+      <div className="black-cover">
+        <div className="black-shape">
+          <img src={logoImage} alt="CtrlBase Logo" className="logo-on-cover" />
+        </div>
+      </div>
 
       <div className={`form-wrapper left-panel ${isLogin ? "active-content" : "inactive-content"}`}>
         <div className="form-content">
-          <div className="mobile-logo-wrapper"><img src={logoImage} alt="Logo" className="mobile-logo-form" /></div>
+          <div className="mobile-logo-wrapper">
+            <img src={logoImage} alt="Logo" className="mobile-logo-form" />
+          </div>
           
           {isActivationView ? (
             <div className="flex flex-col w-full animate-[fadeIn_0.5s_ease-out]">
               <h2 className="title-red">Ativar Acesso</h2>
               <p className="subtitle !mb-8">Um código foi encaminhado para ({activationEmail}). Insira-o abaixo para liberar o seu acesso.</p>
+              
               {erroGeral && <div className="feedback-box error-box"><AlertCircle size={18} /> {erroGeral}</div>}
               {sucessoMsg && <div className="feedback-box success-box"><CheckCircle size={18} /> {sucessoMsg}</div>}
 
               <div className="form-grid mb-6">
                 <div className="floating-group">
-                  <input id="activationEmailLogin" type="email" className="floating-input" placeholder=" " value={activationEmail} onChange={(e) => setActivationEmail(e.target.value)} onFocus={() => setEmailFocused(true)} onBlur={() => setEmailFocused(false)} disabled={loading || !!sucessoMsg} />
+                  <input 
+                    id="activationEmailLogin" 
+                    type="email" 
+                    className="floating-input" 
+                    placeholder=" " 
+                    value={activationEmail} 
+                    onChange={(e) => setActivationEmail(e.target.value)} 
+                    onFocus={() => setEmailFocused(true)} 
+                    onBlur={() => setEmailFocused(false)} 
+                    disabled={loading || !!sucessoMsg} 
+                  />
                   <label htmlFor="activationEmailLogin" className={`floating-label ${activationEmail || emailFocused ? 'active' : ''}`}>E-mail registado</label>
                 </div>
+                
                 <div className="floating-group">
-                  <input id="otpCodeLogin" type="text" className="floating-input" placeholder=" " value={otpCode} onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6))} onFocus={() => setOtpFocused(true)} onBlur={() => setOtpFocused(false)} disabled={loading || !!sucessoMsg} autoComplete="one-time-code" />
+                  <input 
+                    id="otpCodeLogin" 
+                    type="text" 
+                    className="floating-input" 
+                    placeholder=" " 
+                    value={otpCode} 
+                    onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6))} 
+                    onFocus={() => setOtpFocused(true)} 
+                    onBlur={() => setOtpFocused(false)} 
+                    disabled={loading || !!sucessoMsg} 
+                    autoComplete="one-time-code" 
+                  />
                   <label htmlFor="otpCodeLogin" className={`floating-label ${otpCode || otpFocused ? 'active' : ''}`}>Código (6 dígitos)</label>
                 </div>
               </div>
-              <button onClick={handleAtivarConta} disabled={loading || !!sucessoMsg} className="btn-red w-full mt-2">{loading ? "A processar..." : "Confirmar"}</button>
+              
+              <button onClick={handleAtivarConta} disabled={loading || !!sucessoMsg} className="btn-red w-full mt-2">
+                {loading ? "A processar..." : "Confirmar"}
+              </button>
+              
               <div className="mt-5 text-center flex flex-col gap-2">
-                <button type="button" onClick={handleResendOtp} disabled={loading} className="text-xs font-semibold text-gray-400 hover:text-red-700 transition-colors outline-none">Não recebeu o código? Reenviar</button>
-                <button type="button" onClick={() => setIsActivationView(false)} disabled={loading} className="text-sm font-semibold text-gray-400 hover:text-red-700 transition-colors mt-2 outline-none">Voltar</button>
+                <button type="button" onClick={handleResendOtp} disabled={loading} className="text-xs font-semibold text-gray-400 hover:text-red-700 transition-colors outline-none">
+                  Não recebeu o código? Reenviar
+                </button>
+                <button type="button" onClick={() => setIsActivationView(false)} disabled={loading} className="text-sm font-semibold text-gray-400 hover:text-red-700 transition-colors mt-2 outline-none">
+                  Voltar
+                </button>
               </div>
             </div>
           ) : isTrocaSenhaView ? (
@@ -590,14 +810,38 @@ export default function LoginCadastro() {
 
               <div className="form-grid mb-6">
                 <div className="floating-group">
-                  <input id="novaSenha" type={showNovaSenha ? "text" : "password"} className="floating-input" placeholder=" " value={novaSenha} onChange={(e) => setNovaSenha(e.target.value)} onFocus={() => setSenhaFocused(true)} onBlur={() => setSenhaFocused(false)} disabled={loading || !!sucessoMsg} />
+                  <input 
+                    id="novaSenha" 
+                    type={showNovaSenha ? "text" : "password"} 
+                    className="floating-input" 
+                    placeholder=" " 
+                    value={novaSenha} 
+                    onChange={(e) => setNovaSenha(e.target.value)} 
+                    onFocus={() => setSenhaFocused(true)} 
+                    onBlur={() => setSenhaFocused(false)} 
+                    disabled={loading || !!sucessoMsg} 
+                  />
                   <label htmlFor="novaSenha" className={`floating-label ${novaSenha || senhaFocused ? 'active' : ''}`}>Nova Palavra-passe *</label>
-                  <button type="button" className="action-btn-inside" onClick={() => setShowNovaSenha(!showNovaSenha)}>{showNovaSenha ? <EyeOff size={18} /> : <Eye size={18} />}</button>
+                  <button type="button" className="action-btn-inside" onClick={() => setShowNovaSenha(!showNovaSenha)}>
+                    {showNovaSenha ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
                 </div>
                 <div className="floating-group mt-2">
-                  <input id="confirmarNovaSenha" type={showConfirmNovaSenha ? "text" : "password"} className="floating-input" placeholder=" " value={confirmarNovaSenha} onChange={(e) => setConfirmarNovaSenha(e.target.value)} onFocus={() => setConfirmFocused(true)} onBlur={() => setConfirmFocused(false)} disabled={loading || !!sucessoMsg} />
+                  <input 
+                    id="confirmarNovaSenha" 
+                    type={showConfirmNovaSenha ? "text" : "password"} 
+                    className="floating-input" 
+                    placeholder=" " 
+                    value={confirmarNovaSenha} 
+                    onChange={(e) => setConfirmarNovaSenha(e.target.value)} 
+                    onFocus={() => setConfirmFocused(true)} 
+                    onBlur={() => setConfirmFocused(false)} 
+                    disabled={loading || !!sucessoMsg} 
+                  />
                   <label htmlFor="confirmarNovaSenha" className={`floating-label ${confirmarNovaSenha || confirmFocused ? 'active' : ''}`}>Confirmar Nova Palavra-passe *</label>
-                  <button type="button" className="action-btn-inside" onClick={() => setShowConfirmNovaSenha(!showConfirmNovaSenha)}>{showConfirmNovaSenha ? <EyeOff size={18} /> : <Eye size={18} />}</button>
+                  <button type="button" className="action-btn-inside" onClick={() => setShowConfirmNovaSenha(!showConfirmNovaSenha)}>
+                    {showConfirmNovaSenha ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
                 </div>
               </div>
 
@@ -606,22 +850,36 @@ export default function LoginCadastro() {
               </button>
 
               <div className="mt-5 text-center flex flex-col gap-2">
-                <button type="button" onClick={() => { setIsTrocaSenhaView(false); setTempAuthData(null); }} disabled={loading} className="text-sm font-semibold text-gray-400 hover:text-red-700 transition-colors mt-2 outline-none">Cancelar e Voltar</button>
+                <button type="button" onClick={() => { setIsTrocaSenhaView(false); setTempAuthData(null); }} disabled={loading} className="text-sm font-semibold text-gray-400 hover:text-red-700 transition-colors mt-2 outline-none">
+                  Cancelar e Voltar
+                </button>
               </div>
             </div>
           ) : (
             <>
               <h2 className="title-red">Conecte-se</h2>
               <p className="subtitle">Assuma o controlo. Eleve o seu padrão.</p>
+              
               {erroGeral && <div className="feedback-box error-box"><AlertCircle size={18} /> {erroGeral}</div>}
               {sucessoMsg && <div className="feedback-box success-box"><CheckCircle size={18} /> {sucessoMsg}</div>}
+              
               <form onSubmit={handleSubmitLogin(onSubmitLogin, onErrorSubmit)} className="form-grid">
                 <CustomInput name="login" control={controlLogin} label="Login (Utilizador ou E-mail)" required />
                 <CustomInput name="senha" control={controlLogin} label="Palavra-passe" isPassword showPassState={showLoginPass} setShowPassState={setShowLoginPass} required />
-                <div className="forgot-wrapper"><span className="forgot-link" onClick={() => window.dispatchEvent(new CustomEvent('modal:esqueci'))}>Esqueci-me da palavra-passe</span></div>
-                <button type="submit" className="btn-red" disabled={loading}>{loading ? "A Aceder..." : "Entrar"}</button>
+                
+                <div className="forgot-wrapper">
+                  <span className="forgot-link" onClick={() => window.dispatchEvent(new CustomEvent('modal:esqueci'))}>
+                    Esqueci-me da palavra-passe
+                  </span>
+                </div>
+                
+                <button type="submit" className="btn-red" disabled={loading}>
+                  {loading ? "A Aceder..." : "Entrar"}
+                </button>
               </form>
-              <p className="switch-text">A sua empresa é nova por aqui? <span onClick={() => handleSwitch(false)}>Registar</span></p>
+              <p className="switch-text">
+                A sua empresa é nova por aqui? <span onClick={() => handleSwitch(false)}>Registar</span>
+              </p>
             </>
           )}
         </div>
@@ -629,29 +887,61 @@ export default function LoginCadastro() {
 
       <div className={`form-wrapper right-panel ${!isLogin ? "active-content" : "inactive-content"}`}>
         <div className="form-content scrollable">
-          <div className="mobile-logo-wrapper"><img src={logoImage} alt="Logo" className="mobile-logo-form" /></div>
+          <div className="mobile-logo-wrapper">
+            <img src={logoImage} alt="Logo" className="mobile-logo-form" />
+          </div>
           
           {isActivationView ? (
             <div className="flex flex-col w-full animate-[fadeIn_0.5s_ease-out]">
               <h2 className="title-red">Ativar Conta</h2>
               <p className="subtitle !mb-8">Um código foi encaminhado para ({activationEmail}). Insira-o abaixo para concluir o seu registo.</p>
+              
               {erroGeral && <div className="feedback-box error-box"><AlertCircle size={18} /> {erroGeral}</div>}
               {sucessoMsg && <div className="feedback-box success-box"><CheckCircle size={18} /> {sucessoMsg}</div>}
 
               <div className="form-grid mb-6">
                 <div className="floating-group">
-                  <input id="activationEmailReg" type="email" className="floating-input" placeholder=" " value={activationEmail} onChange={(e) => setActivationEmail(e.target.value)} onFocus={() => setEmailFocused(true)} onBlur={() => setEmailFocused(false)} disabled={loading || !!sucessoMsg} />
+                  <input 
+                    id="activationEmailReg" 
+                    type="email" 
+                    className="floating-input" 
+                    placeholder=" " 
+                    value={activationEmail} 
+                    onChange={(e) => setActivationEmail(e.target.value)} 
+                    onFocus={() => setEmailFocused(true)} 
+                    onBlur={() => setEmailFocused(false)} 
+                    disabled={loading || !!sucessoMsg} 
+                  />
                   <label htmlFor="activationEmailReg" className={`floating-label ${activationEmail || emailFocused ? 'active' : ''}`}>E-mail registado</label>
                 </div>
                 <div className="floating-group">
-                  <input id="otpCodeReg" type="text" className="floating-input" placeholder=" " value={otpCode} onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6))} onFocus={() => setOtpFocused(true)} onBlur={() => setOtpFocused(false)} disabled={loading || !!sucessoMsg} autoComplete="one-time-code" />
+                  <input 
+                    id="otpCodeReg" 
+                    type="text" 
+                    className="floating-input" 
+                    placeholder=" " 
+                    value={otpCode} 
+                    onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6))} 
+                    onFocus={() => setOtpFocused(true)} 
+                    onBlur={() => setOtpFocused(false)} 
+                    disabled={loading || !!sucessoMsg} 
+                    autoComplete="one-time-code" 
+                  />
                   <label htmlFor="otpCodeReg" className={`floating-label ${otpCode || otpFocused ? 'active' : ''}`}>Código (6 dígitos)</label>
                 </div>
               </div>
-              <button onClick={handleAtivarConta} disabled={loading || !!sucessoMsg} className="btn-red w-full mt-2">{loading ? "A processar..." : "Confirmar"}</button>
+              
+              <button onClick={handleAtivarConta} disabled={loading || !!sucessoMsg} className="btn-red w-full mt-2">
+                {loading ? "A processar..." : "Confirmar"}
+              </button>
+              
               <div className="mt-5 text-center flex flex-col gap-2">
-                <button type="button" onClick={handleResendOtp} disabled={loading} className="text-xs font-semibold text-gray-400 hover:text-red-700 transition-colors outline-none">Não recebeu o código? Reenviar</button>
-                <button type="button" onClick={() => setIsActivationView(false)} disabled={loading} className="text-sm font-semibold text-gray-400 hover:text-red-700 transition-colors mt-2 outline-none">Voltar</button>
+                <button type="button" onClick={handleResendOtp} disabled={loading} className="text-xs font-semibold text-gray-400 hover:text-red-700 transition-colors outline-none">
+                  Não recebeu o código? Reenviar
+                </button>
+                <button type="button" onClick={() => setIsActivationView(false)} disabled={loading} className="text-sm font-semibold text-gray-400 hover:text-red-700 transition-colors mt-2 outline-none">
+                  Voltar
+                </button>
               </div>
             </div>
           ) : (
@@ -681,13 +971,23 @@ export default function LoginCadastro() {
 
               <div className={regStep === 2 ? 'block' : 'hidden'}>
                 <div className="form-grid">
-                  <div style={{ display: "flex", gap: "15px", width: "100%" }}><CustomInput name="cep" control={controlStep2} label="CEP" mask required /><CustomInput name="uf" control={controlStep2} label="UF" required /></div>
+                  <div style={{ display: "flex", gap: "15px", width: "100%" }}>
+                    <CustomInput name="cep" control={controlStep2} label="CEP" mask required />
+                    <CustomInput name="uf" control={controlStep2} label="UF" required />
+                  </div>
                   <CustomInput name="logradouro" control={controlStep2} label="Logradouro" required />
-                  <div style={{ display: "flex", gap: "15px", width: "100%" }}><CustomInput name="numero" control={controlStep2} label="Número" required /><CustomInput name="bairro" control={controlStep2} label="Bairro" required /></div>
+                  <div style={{ display: "flex", gap: "15px", width: "100%" }}>
+                    <CustomInput name="numero" control={controlStep2} label="Número" required />
+                    <CustomInput name="bairro" control={controlStep2} label="Bairro" required />
+                  </div>
                   <CustomInput name="cidade" control={controlStep2} label="Cidade" required />
                   <div className="button-row">
-                    <button type="button" className="btn-outline" onClick={() => { setRegStep(1); setErroGeral(""); }}><ArrowLeft size={18}/> Voltar</button>
-                    <button type="button" className="btn-red" onClick={avancarParaPasso3}>Próximo</button>
+                    <button type="button" className="btn-outline" onClick={() => { setRegStep(1); setErroGeral(""); }}>
+                      <ArrowLeft size={18}/> Voltar
+                    </button>
+                    <button type="button" className="btn-red" onClick={avancarParaPasso3}>
+                      Próximo
+                    </button>
                   </div>
                 </div>
               </div>
@@ -707,7 +1007,10 @@ export default function LoginCadastro() {
                     <div className="form-grid">
                       <CustomInput name="nomeCompleto" control={controlSocio} label="Nome Completo" required={isNovoTitular} />
                       <div className="floating-group">
-                        <Controller name="sexoBiologico" control={controlSocio} render={({ field: { onChange, value }, fieldState: { error } }) => (
+                        <Controller 
+                          name="sexoBiologico" 
+                          control={controlSocio} 
+                          render={({ field: { onChange, value }, fieldState: { error } }) => (
                             <>
                               <select id="sexoBiologico" name="sexoBiologico" value={value || ""} onChange={onChange} className={`floating-input ${error ? "error" : ""}`} style={{ appearance: "none" }}>
                                 <option value="" disabled hidden></option>
@@ -740,7 +1043,9 @@ export default function LoginCadastro() {
                   )}
 
                   <div className="button-row" style={{marginTop: "20px"}}>
-                    <button type="button" className="btn-outline" onClick={() => setRegStep(2)}><ArrowLeft size={18}/> Voltar</button>
+                    <button type="button" className="btn-outline" onClick={() => setRegStep(2)}>
+                      <ArrowLeft size={18}/> Voltar
+                    </button>
                     <button type="submit" className="btn-red" disabled={loading}>
                        {loading ? "A processar..." : isNovoTitular ? "Finalizar Registo" : "Vincular Empresa"}
                     </button>
@@ -748,7 +1053,11 @@ export default function LoginCadastro() {
                 </form>
               </div>
 
-              {regStep === 1 && ( <p className="switch-text">Já possui acesso? <span onClick={() => handleSwitch(true)}>Entrar</span></p> )}
+              {regStep === 1 && ( 
+                <p className="switch-text">
+                  Já possui acesso? <span onClick={() => handleSwitch(true)}>Entrar</span>
+                </p> 
+              )}
             </>
           )}
         </div>
