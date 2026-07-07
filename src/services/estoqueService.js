@@ -1,30 +1,19 @@
-import { apiFetch } from "./api";
+import api from "./api";
 
 const PATH = "/estoque";
 
 export const estoqueService = {
-
-  registrarEntrada: (payload) => 
-    apiFetch(`${PATH}/entrada/lote`, { 
-      method: "POST", 
-      body: JSON.stringify(payload) 
-    }),
+  registrarEntrada: (payload) => api.post(`${PATH}/entrada/lote`, payload),
   
-  registrarPerda: (payload) => 
-    apiFetch(`${PATH}/perdas`, { 
-      method: "POST", 
-      body: JSON.stringify(payload) 
-    }),
+  registrarPerda: (payload) => api.post(`${PATH}/perdas`, payload),
 
   listarMovimentacoes: async (params = {}) => {
-
-    const query = new URLSearchParams(params).toString();
-    const response = await apiFetch(`${PATH}/movimentacoes?${query}`);
-    return response.json(); 
+    const response = await api.get(`${PATH}/movimentacoes`, { params });
+    return response.data; 
   },
 
   listarPerdas: async () => {
-    const response = await apiFetch(`${PATH}/perdas`);
-    return response.json(); 
+    const response = await api.get(`${PATH}/perdas`);
+    return response.data; 
   }
 };

@@ -3,7 +3,7 @@ import { User, Loader2, Camera, ChevronDown, Calendar, Type, Image as ImageIcon 
 import Webcam from "react-webcam";
 import ModalLateral from "../common/ModalLateral";
 import { validarCPF } from "../../utils/validadores"; 
-import { apiFetch } from "../../services/api";
+import api from "../../services/api";
 import { useAuth } from "../../context/AuthContext";
 
 const valoresIniciais = {
@@ -266,21 +266,23 @@ export default function CadastroCliente({ onClose, dadosIniciais, onSalvo, isOpe
       const url = isEdicao ? `/clientes/${form.idCliente || form.id}` : "/clientes";
       const method = isEdicao ? "PATCH" : "POST";
       
-      await apiFetch(url, {
+      await api({
+        url,
         method,
-        body: JSON.stringify(payload)
+        data: payload
       });
 
       if (onSalvo) onSalvo();
       fecharModalComAnimacao();
 
     } catch (err) {
-      if (err.backendErrors && err.backendErrors.length > 0) {
-         const mensagens = err.backendErrors.map(e => `• ${e.campo}: ${e.mensagem}`).join("\n");
+      const data = err.response?.data || {};
+      if (data.backendErrors && data.backendErrors.length > 0) {
+         const mensagens = data.backendErrors.map(e => `• ${e.campo}: ${e.mensagem || e.defaultMessage}`).join("\n");
          alert(`Corrija os seguintes campos:\n\n${mensagens}`);
-         setErros(err.backendErrors.map(e => e.campo));
+         setErros(data.backendErrors.map(e => e.campo));
       } else {
-         alert(err.message || "Erro ao guardar cliente.");
+         alert(data.message || data.erro || err.message || "Erro ao guardar cliente.");
       }
       setTimeout(() => setErros([]), 4000);
     } finally {
@@ -393,7 +395,6 @@ export default function CadastroCliente({ onClose, dadosIniciais, onSalvo, isOpe
     </>
   );
 }
-
 
 function InputTelefone({ id, label, ddiValue, onDdiChange, telValue, onTelChange, hasError }) {
   const [isFocused, setIsFocused] = useState(false);

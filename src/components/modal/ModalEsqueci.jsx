@@ -3,7 +3,7 @@ import { X, Mail, AlertCircle, CheckCircle, Eye, EyeOff } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
-import { apiFetch } from "../../services/api";
+import api from "../../services/api";
 
 const FormInput = React.forwardRef(({ label, error, type = "text", allowOnlyNumbers, onChange, ...props }, ref) => {
   const [showPassword, setShowPassword] = useState(false);
@@ -112,8 +112,14 @@ export default function ModalEsqueci() {
   };
 
   const extrairErro = (err) => {
-    if (err.backendErrors && err.backendErrors.length > 0) {
-      return err.backendErrors.map(e => e.mensagem || e.defaultMessage).join(" | ");
+    if (err.response && err.response.data) {
+      const data = err.response.data;
+      if (data.backendErrors && data.backendErrors.length > 0) {
+        return data.backendErrors.map(e => e.mensagem || e.defaultMessage).join(" | ");
+      }
+      if (data.message) return data.message;
+      if (data.erro) return data.erro;
+      if (typeof data === 'string') return data;
     }
     return err.message || "Ocorreu um erro inesperado.";
   };
@@ -124,10 +130,7 @@ export default function ModalEsqueci() {
     setFeedback({ type: "", message: "" });
     
     try {
-      await apiFetch("/auth/forgot-password", {
-        method: "POST",
-        body: JSON.stringify({ email: data.email.trim() })
-      });
+      await api.post("/auth/forgot-password", { email: data.email.trim() });
       
       setEmailRecuperacao(data.email.trim());
       setFeedback({ type: "success", message: "Código enviado para o seu e-mail!" });
@@ -145,17 +148,13 @@ export default function ModalEsqueci() {
     setFeedback({ type: "", message: "" });
     
     try {
-
       const payload = { 
         email: emailRecuperacao, 
         codigo0tp: data.codigoOtp, 
         novaSenha: data.novaSenha 
       };
       
-      await apiFetch("/auth/reset-password", {
-        method: "POST",
-        body: JSON.stringify(payload)
-      });
+      await api.post("/auth/reset-password", payload);
       
       setFeedback({ type: "success", message: "Palavra-passe redefinida com sucesso!" });
       setTimeout(handleClose, 2500);

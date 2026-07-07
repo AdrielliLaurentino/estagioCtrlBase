@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback, useMemo } from "react"
 import { Loader2, Search, ChevronUp, ChevronDown, Plus, Trash2, Package, AlertTriangle, ShieldAlert } from "lucide-react";
 import ModalLateral from "../common/ModalLateral"; 
 import adcProdutoIcon from "../../assets/icons/adcproduto.png";
-import { apiFetch } from "../../services/api"; 
+import api from "../../services/api"; 
 
 const aplicarMascaraMoeda = (valor) => {
   if (valor == null || valor === "") return "";
@@ -145,22 +145,21 @@ export default function ModalRegistroEntrada({ isOpen, onClose, onSalvo }) {
           quantidade: parseInt(v.quantidade, 10),
           valorCusto: (hasPrivilegios && v.valorCusto) ? limparMascaraMoeda(v.valorCusto) : null,
           valorVenda: (hasPrivilegios && v.valorVenda) ? limparMascaraMoeda(v.valorVenda) : null,
-          
           codigoBarras: v.isNova && v.codigoBarras ? String(v.codigoBarras).trim() : null,
           ncm: v.isNova && v.ncm ? String(v.ncm).trim() : null,
           estoqueMinimo: v.isNova ? (Number(v.estoqueMinimo) || 5) : undefined
         }))
       };
 
-      await apiFetch(`/estoque/entrada/lote`, { 
-        method: 'POST', 
-        body: JSON.stringify(payload)
-      });
+      await api.post(`/estoque/entrada/lote`, payload);
 
       onSalvo?.();
       fecharModalComAnimacao(); 
     } catch (error) {
-      setErrosBackend([{ campo: "Erro", mensagem: error.message || "Falha na comunicação." }]);
+      setErrosBackend([{ 
+        campo: "Erro", 
+        mensagem: error.response?.data?.message || error.message || "Falha na comunicação." 
+      }]);
     } finally {
       setLoading(false);
     }
@@ -267,7 +266,6 @@ export default function ModalRegistroEntrada({ isOpen, onClose, onSalvo }) {
                       </div>
                     )}
 
-                    {/* Exibe valores de custo e venda APENAS se o usuário tem privilégio */}
                     {hasPrivilegios && (
                       <div className="grid grid-cols-2 gap-6">
                         <Input label="Custo Unitário (R$)" type="text" value={v.valorCusto} onChange={val => handleAtualizarVariacao(index, "valorCusto", val)} />
@@ -315,12 +313,12 @@ export function Autocomplete({ label, value, onSelect, obrigatorio }) {
     const fetchProdutos = async () => {
       setCarregando(true);
       try {
-        const res = await apiFetch(`/produtos?page=0&size=100`, { signal: controller.signal });
-        const data = await res.json();
+        const res = await api.get(`/produtos?page=0&size=100`, { signal: controller.signal });
+        const data = res.data;
         const array = Array.isArray(data) ? data : (data.content || []);
         const termo = busca.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
         setProdutos(array.filter(p => String(p.nomeGenerico || p.nome).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").includes(termo)));
-      } catch (e) { if (e.name !== "AbortError") console.error(e); } finally { setCarregando(false); }
+      } catch (e) { if (e.name !== "CanceledError") console.error(e); } finally { setCarregando(false); }
     };
     const t = setTimeout(fetchProdutos, 400);
     return () => { clearTimeout(t); controller.abort(); };

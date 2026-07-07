@@ -7,6 +7,11 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  const extrairPrimeiroNome = (nomeCompleto) => {
+    if (!nomeCompleto) return "";
+    return nomeCompleto.trim().split(" ")[0];
+  };
+
   const logout = useCallback(() => {
     localStorage.removeItem("usuario");
     localStorage.removeItem("@CtrlBase:token");
@@ -21,9 +26,9 @@ export function AuthProvider({ children }) {
     if (storedUser && storedToken) {
       try {
         const parsedUser = JSON.parse(storedUser);
+        parsedUser.primeiroNome = extrairPrimeiroNome(parsedUser.nome || parsedUser.nomeCompleto);
         setUser(parsedUser);
       } catch (error) {
-        console.error("Sessão local corrompida. Limpando os dados.");
         logout();
       }
     }
@@ -41,7 +46,6 @@ export function AuthProvider({ children }) {
   const signIn = useCallback(async (login, senha) => {
     try {
       const response = await api.post('/auth/login', { login, senha });
-  
       const dadosUsuario = response.data;
   
       if (!dadosUsuario.token) {
@@ -52,17 +56,14 @@ export function AuthProvider({ children }) {
     } catch (err) {
       let mensagemErro = err.message || "Erro desconhecido ao tentar fazer login.";
       
-      if (err.response && err.response.data) {
-        if (err.response.data.backendErrors && err.response.data.backendErrors.length > 0) {
-          mensagemErro = err.response.data.backendErrors
-            .map(e => e.mensagem || e.defaultMessage)
-            .join(" | ");
-        } 
-        else if (err.response.data.message || err.response.data.erro) {
-          mensagemErro = err.response.data.message || err.response.data.erro;
-        } 
-        else if (typeof err.response.data === 'string') {
-          mensagemErro = err.response.data;
+      if (err.response?.data) {
+        const { data } = err.response;
+        if (data.backendErrors?.length > 0) {
+          mensagemErro = data.backendErrors.map(e => e.mensagem || e.defaultMessage).join(" | ");
+        } else if (data.message || data.erro) {
+          mensagemErro = data.message || data.erro;
+        } else if (typeof data === 'string') {
+          mensagemErro = data;
         }
       }
       
@@ -71,9 +72,14 @@ export function AuthProvider({ children }) {
   }, []);
 
   const handleLoginSuccess = useCallback((dadosFinais) => {
-    localStorage.setItem("usuario", JSON.stringify(dadosFinais));
+    const usuarioEnriquecido = {
+      ...dadosFinais,
+      primeiroNome: extrairPrimeiroNome(dadosFinais.nome || dadosFinais.nomeCompleto)
+    };
+
+    localStorage.setItem("usuario", JSON.stringify(usuarioEnriquecido));
     localStorage.setItem("@CtrlBase:token", dadosFinais.token);
-    setUser(dadosFinais);
+    setUser(usuarioEnriquecido);
     
     window.location.href = "/home"; 
   }, []);

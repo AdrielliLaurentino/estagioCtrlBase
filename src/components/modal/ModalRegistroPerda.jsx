@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from "react";
 import { Loader2, AlertTriangle } from "lucide-react";
 import ModalLateral from "../common/ModalLateral"; 
-import { apiFetch } from "../../services/api";
+import api from "../../services/api";
 
 import { Autocomplete, Input } from "./ModalRegistroEntrada";
 

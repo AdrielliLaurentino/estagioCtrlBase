@@ -1,26 +1,23 @@
-import { apiFetch } from "./api";
+import api from "./api";
 
 const PATH = "/produtos";
 
 export const produtoService = {
-  cadastrar: (payload) => apiFetch(PATH, { method: "POST", body: JSON.stringify(payload) }),
+  cadastrar: (payload) => api.post(PATH, payload),
   
-  atualizar: (id, payload) => apiFetch(`${PATH}/${id}`, { method: "PUT", body: JSON.stringify(payload) }),
+  atualizar: (id, payload) => api.put(`${PATH}/${id}`, payload),
   
   consultarNCM: async (ean) => {
-    const response = await apiFetch(`${PATH}/consultar-ncm/${ean}`);
-    return response.json();
+    const response = await api.get(`${PATH}/consultar-ncm/${ean}`);
+    return response.data;
   },
   
   listar: async (page = 0, size = 100, signal) => {
-    const response = await apiFetch(`${PATH}?page=${page}&size=${size}`, { signal });
-    return response.json();
+    const response = await api.get(`${PATH}?page=${page}&size=${size}`, { signal });
+    return response.data;
   },
   
-  excluir: (id) => apiFetch(`${PATH}/${id}`, { method: "DELETE" }),
+  excluir: (id) => api.delete(`${PATH}/${id}`),
   
-  alterarStatus: (id, ativo) => apiFetch(`${PATH}/${id}/status`, {
-    method: "PATCH",
-    body: JSON.stringify({ ativo })
-  })
+  alterarStatus: (id, ativo) => api.patch(`${PATH}/${id}/status`, { ativo })
 };

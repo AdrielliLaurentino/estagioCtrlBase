@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useId, useMemo } from "react";
 import { Loader2, X, ChevronLeft, Check, Plus, Minus, Trash2, AlertTriangle } from "lucide-react";
 import { useCarrinho } from "../../context/CarrinhoContext";
 import { useTheme } from "../../context/ThemeContext";
-import { apiFetch } from "../../services/api";
+import api from "../../services/api";
 import carrinhocon from "../../assets/icons/carrinho.png";
 import pesquisarIcon from "../../assets/icons/pesquisar.png";
 import dinheiroIcon from "../../assets/icons/dinheiro.png";
@@ -172,8 +172,8 @@ export default function CarrinhoCompras({ onClose, produtoParaAdicionar, isFixed
         if (clienteInput.length > 2 && !cliente) {
             setLoadingSearch(p => ({ ...p, clientes: true }));
             try {
-                const res = await apiFetch(`/clientes?busca=${encodeURIComponent(clienteInput)}`);
-                const data = await res.json();
+                const res = await api.get(`/clientes?busca=${encodeURIComponent(clienteInput)}`);
+                const data = res.data;
                 setSugestoesClientes(Array.isArray(data) ? data : (data.content || []));
             } catch {} finally { setLoadingSearch(p => ({ ...p, clientes: false })); }
         } else setSugestoesClientes([]);
@@ -186,8 +186,8 @@ export default function CarrinhoCompras({ onClose, produtoParaAdicionar, isFixed
         if (produtoInput.length >= 2) { 
             setLoadingSearch(p => ({ ...p, produtos: true }));
             try {
-                const res = await apiFetch(`/produtos?busca=${encodeURIComponent(produtoInput)}`);
-                const data = await res.json();
+                const res = await api.get(`/produtos?busca=${encodeURIComponent(produtoInput)}`);
+                const data = res.data;
                 const listaRaw = Array.isArray(data) ? data : (data.content || []);
                 const listaExpandida = [];
                 listaRaw.forEach(p => {
