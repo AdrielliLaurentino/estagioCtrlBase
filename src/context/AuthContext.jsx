@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { apiFetch } from '../services/api';
+import api from '../services/api';
 
 const AuthContext = createContext({});
 
@@ -23,7 +23,7 @@ export function AuthProvider({ children }) {
         const parsedUser = JSON.parse(storedUser);
         setUser(parsedUser);
       } catch (error) {
-        console.error("Sessão local corrompida. A limpar os dados.");
+        console.error("Sessão local corrompida. Limpando os dados.");
         logout();
       }
     }
@@ -40,12 +40,9 @@ export function AuthProvider({ children }) {
 
   const signIn = useCallback(async (login, senha) => {
     try {
-      const response = await apiFetch('/auth/login', {
-        method: "POST",
-        body: JSON.stringify({ login, senha })
-      });
+      const response = await api.post('/auth/login', { login, senha });
   
-      const dadosUsuario = await response.json();
+      const dadosUsuario = response.data;
   
       if (!dadosUsuario.token) {
         throw new Error("Falha na autenticação: Token de acesso ausente.");
@@ -53,10 +50,20 @@ export function AuthProvider({ children }) {
   
       return dadosUsuario; 
     } catch (err) {
-      let mensagemErro = err.message;
+      let mensagemErro = err.message || "Erro desconhecido ao tentar fazer login.";
       
-      if (err.backendErrors && err.backendErrors.length > 0) {
-        mensagemErro = err.backendErrors.map(e => e.mensagem || e.defaultMessage).join(" | ");
+      if (err.response && err.response.data) {
+        if (err.response.data.backendErrors && err.response.data.backendErrors.length > 0) {
+          mensagemErro = err.response.data.backendErrors
+            .map(e => e.mensagem || e.defaultMessage)
+            .join(" | ");
+        } 
+        else if (err.response.data.message || err.response.data.erro) {
+          mensagemErro = err.response.data.message || err.response.data.erro;
+        } 
+        else if (typeof err.response.data === 'string') {
+          mensagemErro = err.response.data;
+        }
       }
       
       throw new Error(mensagemErro);
